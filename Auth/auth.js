@@ -19,7 +19,7 @@ router.post("/register", async (req, res) => {
     return res.json({ status: "All Fields are required!!" });
   }
   try {
-    const oldUser = await db.findOne({ username: username });
+    const oldUser = await db.findOne({ username: username },{ maxTimeMS: 15000 });
     if(oldUser){
       return res.json({ status: "Username already exists!!" });
     }
@@ -40,7 +40,7 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  const user = await db.findOne({ username: username });
+  const user = await db.findOne({ username: username },{ maxTimeMS: 15000 });
   // check if user exists -- empty fields are also handled
   if (!user) {
     return res.json({ status: "User Doesn't Exist!", username});
@@ -63,7 +63,7 @@ router.post("/login", async (req, res) => {
 
 router.post("/loginstore", async (req, res) => {
   const { username } = req.body;
-  const user = await db.findOne({ username: username });
+  const user = await db.findOne({ username: username },{ maxTimeMS: 15000 });
   // check if user exists -- empty fields are also handled
   if (!user) {
     return res.json({ status: "User Doesn't Exist!", username});
