@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 
-const path = require('path');
+const path = require("path");
 
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -29,11 +29,7 @@ const SavedPost = require("./Savedpost/Savedpost");
 const app = express();
 // db
 mongoose
-  .connect(process.env.DATABASE, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.DATABASE)
   .then(() => console.log("DB Connected"));
 
 module.exports = {
@@ -57,31 +53,35 @@ module.exports = {
 app.use(bodyParser.json());
 
 // app.use(cors());
-app.use(cors({
-  origin: "*",
-  optionsSuccessStatus: 200,
-}));
+app.use(
+  cors({
+    origin: "*",
+    optionsSuccessStatus: 200,
+  })
+);
 
-app.use(express.static(path.join(__dirname,'/build')));
+app.use(express.static(path.join(__dirname, "/build")));
 
 //routes middleware
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
   next();
 });
 
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/mysubgreddits", mySubgredditRoutes);
-app.use("/api/mysubgredditsmod",mySubgredditMODRoutes);
-app.use("/api/akasubgreddits",AkaSubbgredditRoutes);
-app.use("/api/savedpost",SavedPost)
+app.use("/api/mysubgredditsmod", mySubgredditMODRoutes);
+app.use("/api/akasubgreddits", AkaSubbgredditRoutes);
+app.use("/api/savedpost", SavedPost);
 
-
-app.get('*',(req,res) => {
-  res.sendFile(path.join(__dirname+'/build/'));
-})
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname + "/build/"));
+});
 
 const port = process.env.PORT || 7000;
 app.listen(port, () => {
