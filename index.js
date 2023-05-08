@@ -7,27 +7,11 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 require("dotenv").config();
 
-//Avoid Deprecated!
-mongoose.set("strictQuery", false);
-mongoose.connect(process.env.DATABASE, () => {
-  console.log("Connected to MongoDB");
-});
-//Avoid Deprecated!
-
-//import routes
-// const authRoutes = require('./routes/auth');
-// const db = require('./models/User');
-// const Subgreddit = require('./models/Subgreddit');
-const authRoutes = require("./Auth/auth");
-const profileRoutes = require("./Profile/editprofile");
-const mySubgredditRoutes = require("./MySubGreddit/mySubGreddit");
-const mySubgredditMODRoutes = require("./SubGredditMod/SubGredditMod");
-const AkaSubbgredditRoutes = require("./AkaSubGreddits/AkaSubgreddit");
-const SavedPost = require("./Savedpost/Savedpost");
 
 //app
 const app = express();
 // db
+mongoose.set("strictQuery", false);
 mongoose
   .connect(process.env.DATABASE)
   .then(() => console.log("DB Connected"));
@@ -52,7 +36,6 @@ module.exports = {
 //middlewares
 app.use(bodyParser.json());
 
-// app.use(cors());
 app.use(
   cors({
     origin: "*",
@@ -62,7 +45,7 @@ app.use(
 
 app.use(express.static(path.join(__dirname, "/build")));
 
-//routes middleware
+
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -72,12 +55,12 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/api/auth", authRoutes);
-app.use("/api/profile", profileRoutes);
-app.use("/api/mysubgreddits", mySubgredditRoutes);
-app.use("/api/mysubgredditsmod", mySubgredditMODRoutes);
-app.use("/api/akasubgreddits", AkaSubbgredditRoutes);
-app.use("/api/savedpost", SavedPost);
+app.use("/api/auth", require("./Auth/auth"));
+app.use("/api/profile", require("./Profile/editprofile"));
+app.use("/api/mysubgreddits", require("./MySubGreddit/mySubGreddit"));
+app.use("/api/mysubgredditsmod", require("./SubGredditMod/SubGredditMod"));
+app.use("/api/akasubgreddits", require("./AkaSubGreddits/AkaSubgreddit"));
+app.use("/api/savedpost", require("./Savedpost/Savedpost"));
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname + "/build/"));
