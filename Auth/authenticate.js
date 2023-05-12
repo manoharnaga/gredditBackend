@@ -38,6 +38,13 @@ router.post("/register", async (req, res) => {
   }
 });
 
+
+const generateToken = (user) => {
+  const payload = { id: user._id,username:user.username, email: user.email };
+  const options = { expiresIn: JWT_EXPIRES_IN };
+  return jwt.sign(payload, JWT_SECRET, options);
+};
+
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
   const user = await db.findOne({ username: username });
@@ -52,9 +59,10 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ status: "User Doesn't Exist!", username});
   }
 
-  // jwt(token)
+  const token = generateToken(user);
+  
   if (res.status(201)) {
-    return res.json({ status: "Login successful!", user });
+    return res.json({ status: "Login successful!", user, token: token });
   } else {
     return res.json({ status: "Error: Login Unsuccessful!" });
   }
