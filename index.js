@@ -1,20 +1,16 @@
 const express = require("express");
 const mongoose = require("mongoose");
-
-const path = require("path");
-
 const cors = require("cors");
 const bodyParser = require("body-parser");
 require("dotenv").config();
 
+// const path = require("path");
 
 //app
-const app = express();
+const app = express();  
 // db
-mongoose.set("strictQuery", false);
-mongoose
-  .connect(process.env.DATABASE)
-  .then(() => console.log("DB Connected"));
+mongoose.set("strictQuery", true);
+mongoose.connect(process.env.DATABASE).then(() => console.log("DB Connected"));
 
 module.exports = {
   connectToServer: function (callback) {
@@ -34,28 +30,13 @@ module.exports = {
 };
 
 //middlewares
+
+app.use(cors());
 app.use(bodyParser.json());
 
-app.use(
-  cors({
-    origin: "*",
-    optionsSuccessStatus: 200,
-  })
-);
+// app.use(express.static(path.join(__dirname, "/build")));
 
-app.use(express.static(path.join(__dirname, "/build")));
-
-
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
-
-app.use("/api/auth", require("./Auth/auth"));
+app.use("/api/auth", require("./Auth/authenticate"));
 app.use("/api/profile", require("./Profile/editprofile"));
 app.use("/api/mysubgreddits", require("./MySubGreddit/mySubGreddit"));
 app.use("/api/mysubgredditsmod", require("./SubGredditMod/SubGredditMod"));
