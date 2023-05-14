@@ -35,6 +35,19 @@ let Report = new SchemaReport(
   }
 );
 
+const SchemaComment = mongoose.Schema;
+let Comment = new SchemaComment(
+  {
+    commentedBy: {
+      type: String,
+      required: true,
+    },
+    Text: {
+      type: String,
+      required: true,
+    },
+    recurse: [Comment],
+});
 
 let Posts = new SchemaPost(
   {
@@ -57,7 +70,7 @@ let Posts = new SchemaPost(
     // we store upvotes as list of id's/usernames of users who upvoted/downvoted
     upvotes: [],  
     downvotes: [],
-    comments: [String],
+    comments: [Comment],
     savedby: [String],
     report: [Report]
   }
