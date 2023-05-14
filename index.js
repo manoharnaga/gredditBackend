@@ -30,12 +30,11 @@ module.exports = {
 };
 
 //middlewares
-
-app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
 
 // app.use(express.static(path.join(__dirname, "/build")));
-
 app.use("/api/auth", require("./Auth/authenticate"));
 app.use("/api/profile", require("./Profile/editprofile"));
 app.use("/api/mysubgreddits", require("./MySubGreddit/mySubGreddit"));
@@ -43,11 +42,12 @@ app.use("/api/mysubgredditsmod", require("./SubGredditMod/SubGredditMod"));
 app.use("/api/akasubgreddits", require("./AkaSubGreddits/AkaSubgreddit"));
 app.use("/api/savedpost", require("./Savedpost/Savedpost"));
 
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname + "/build/"));
-});
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname + "/build/"));
+// });
 
 const port = process.env.PORT || 7000;
 app.listen(port, () => {
+  // console.clear();
   console.log(`Server is running on ${port}`);
 });

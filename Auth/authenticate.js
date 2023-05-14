@@ -2,28 +2,18 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const db = require("../models/User");
+const generateToken = require("./jwt/generateToken");
+const verifyToken = require("./jwt/verifyToken");
 
 router.post("/register", async (req, res) => {
   const { fname, lname, username, emailid, age, phno, password } = req.body;
-  isRequired =
-    fname.length > 0 &&
-    lname.length > 0 &&
-    username.length > 0 &&
-    emailid.length > 0 &&
-    age.length > 0 &&
-    phno.length > 0 &&
-    password.length > 0;
+  isRequired = fname.length > 0 && lname.length > 0 && username.length > 0 && emailid.length > 0 && age.length > 0 && phno.length > 0 && password.length > 0;
 
   // check if empty fields
   if (!isRequired) {
     return res.json({ status: "All Fields are required!!" });
   }
   try {
-    const oldUser = await db.findOne({ username: username });
-    if(oldUser){
-      return res.json({ status: "Username already exists!!" });
-    }
-    else{
       const hashedPassword = await bcrypt.hash(password, 10);
       req.body.password = hashedPassword;
 
@@ -32,57 +22,88 @@ router.post("/register", async (req, res) => {
         .save()
         .then((data) => res.json(data))
         .catch((error) => console.error("Error:", error));
-    }
   } catch (error) {
-    res.send({ status: "Error submitting new UserRegistration!" });
+    res.json({ status: "Error submitting new UserRegistration!" });
   }
 });
-
-
-const generateToken = (user) => {
-  const payload = { id: user._id,username:user.username, email: user.email };
-  const options = { expiresIn: JWT_EXPIRES_IN };
-  return jwt.sign(payload, JWT_SECRET, options);
-};
 
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  const user = await db.findOne({ username: username });
+
+  let user = await db.findOne({ username: username });
   // check if user exists -- empty fields are also handled
   if (!user) {
-    return res.json({ status: "User Doesn't Exist!", username});
+    return res.status(404).json({ username });
   }
-
   const isMatch = await bcrypt.compare(password, user.password);
-
-  if(!isMatch){
-    return res.status(401).json({ status: "User Doesn't Exist!", username});
+  if (!isMatch) {
+    return res.status(401).json({ username });
   }
-
-  const token = generateToken(user);
-  
-  if (res.status(201)) {
-    return res.json({ status: "Login successful!", user, token: token });
-  } else {
-    return res.json({ status: "Error: Login Unsuccessful!" });
-  }
+  const token = await generateToken(username);
+  user.token = token;
+  return res.status(200).json({ user });
 });
 
-
-router.post("/loginstore", async (req, res) => {
-  const { username } = req.body;
+router.post("/loginstore", verifyToken, async (req, res) => {
+  const { username } = req.user;
   const user = await db.findOne({ username: username });
   // check if user exists -- empty fields are also handled
   if (!user) {
-    return res.json({ status: "User Doesn't Exist!", username});
+    return res.status(404).json({ username });
   }
-  
-  // jwt(token)
-  if (res.status(201)) {
-    return res.json({ status: "Login successful!", user });
-  } else {
-    return res.json({ status: "Error: Login Unsuccessful!" });
-  }
+  return res.status(200).json({ user });
 });
 
+router.get("/getallusernames", async (req, res) => {
+  const users = await db.find({});
+  let usernames = [];
+  let emails = [];
+  if (!users) {
+    return res.status(404).json({ usernames });
+  }
+  for (let i = 0; i < users.length; i++) {
+    usernames.push(users[i].username);
+    emails.push(users[i].emailid);
+  }
+  if (usernames.length === 0) {
+    return res.status(404).json({ usernames });
+  }
+  return res.status(200).json({ usernames, emails });
+});
+
+router.post("/altlogin", async (req, res) => {
+  const { altType, userinfo } = req.body;
+  let user = null;
+  if (altType === "google") {
+    user = await db.findOne({ emailid: userinfo });
+  } else if (altType === "phno") {
+    user = await db.findOne({ phno: userinfo });
+  } else if (altType === "facebook") {
+    // user = await db.findOne({ emailid: userinfo });
+  }
+
+  if (!user) {
+    return res.status(404).json({ userinfo });
+  }
+  const token = await generateToken(user.username);
+  user.token = token;
+  return res.status(200).json({ user });
+});
+
+router.post("/altregister", async (req, res) => {
+  const { username, emailid, phno } = req.body;
+  // check if empty fields
+  if (!(username.length > 0 && (emailid.length > 0 || phno.length > 0))) {
+    return res.json({ status: "All Fields are required!!" });
+  }
+  try {
+    const newData = new db(req.body);
+    await newData
+      .save()
+      .then((data) => res.json(data))
+      .catch((error) => console.error("Error:", error));
+  } catch (error) {
+    res.json({ status: "Error submitting new AltUserRegistration!" });
+  }
+});
 module.exports = router;
