@@ -91,4 +91,22 @@ router.put("/editprofile", async (req, res) => {
   }
 });
 
+
+router.put("/uploadimage", verifyToken, async (req, res) => {
+  const { username } = req.user;
+  const { imgUrl } = req.body;
+  const user = await db.findOne({ username: username });
+  if (!user || !imgUrl) {
+    return res.status(404).json({username,imgUrl});
+  }
+  try {
+    user.profilepic = imgUrl;
+    await user.save()
+    .then((data) => res.status(200).json({ status: "Updated Profilepic successfully!", user: data }))
+    .catch((error) => console.error("Error:", error));
+  } catch (e) {
+    return res.status(500).json({ status: "Error uploading ProfilePic: ", e });
+  }
+});
+
 module.exports = router;

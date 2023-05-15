@@ -16,7 +16,7 @@ router.post("/register", async (req, res) => {
   try {
       const hashedPassword = await bcrypt.hash(password, 10);
       req.body.password = hashedPassword;
-
+      req.body.profilepic = process.env.DEFAULT_PROFILE_PIC;
       const newData = new db(req.body);
       await newData
         .save()
@@ -30,7 +30,7 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
-  let user = await db.findOne({ username: username });
+  const user = await db.findOne({ username: username });
   // check if user exists -- empty fields are also handled
   if (!user) {
     return res.status(404).json({ username });
@@ -97,6 +97,7 @@ router.post("/altregister", async (req, res) => {
     return res.json({ status: "All Fields are required!!" });
   }
   try {
+    req.body.profilepic = process.env.DEFAULT_PROFILE_PIC;
     const newData = new db(req.body);
     await newData
       .save()
