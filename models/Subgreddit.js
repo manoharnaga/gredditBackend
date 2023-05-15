@@ -46,7 +46,7 @@ let Comment = new SchemaComment(
       type: String,
       required: true,
     },
-    recurse: [Comment],
+    recurse: [],
 });
 
 let Posts = new SchemaPost(
