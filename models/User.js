@@ -28,9 +28,6 @@ let userSchema = new Schema({
    profilepic: {
       type: String,
    },
-   token: {
-      type: String,
-   },
    followers: [],
    following: []
 },{

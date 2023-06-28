@@ -40,18 +40,21 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ username });
   }
   const token = await generateToken(username);
-  user.token = token;
-  return res.status(200).json({ user });
+  return res.status(200).json({ user,token });
 });
 
 router.post("/loginstore", verifyToken, async (req, res) => {
   const { username } = req.user;
+  let newToken = null;
+  if(req.isNewToken){
+    newToken = req.headers.authorization?.split(' ')[1];
+  }
   const user = await db.findOne({ username: username });
   // check if user exists -- empty fields are also handled
   if (!user) {
     return res.status(404).json({ username });
   }
-  return res.status(200).json({ user });
+  return res.status(200).json({ user, newToken });
 });
 
 router.get("/getallusernames", async (req, res) => {
@@ -86,8 +89,7 @@ router.post("/altlogin", async (req, res) => {
     return res.status(404).json({ userinfo });
   }
   const token = await generateToken(user.username);
-  user.token = token;
-  return res.status(200).json({ user });
+  return res.status(200).json({ user,token });
 });
 
 router.post("/altregister", async (req, res) => {
