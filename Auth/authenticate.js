@@ -45,16 +45,20 @@ router.post("/login", async (req, res) => {
 
 router.post("/loginstore", verifyToken, async (req, res) => {
   const { username } = req.user;
-  let newToken = null;
-  if(req.isNewToken){
-    newToken = req.headers.authorization?.split(' ')[1];
+  // let newToken = null;
+  // if(req.isNewToken){
+  //   newToken = req.headers.authorization?.split(' ')[1];
+  // }
+  if(req.isExpired){
+    // console.log("Token Expired");
+    return res.status(401).json({ username });
   }
   const user = await db.findOne({ username: username });
   // check if user exists -- empty fields are also handled
   if (!user) {
     return res.status(404).json({ username });
   }
-  return res.status(200).json({ user, newToken });
+  return res.status(200).json({user});
 });
 
 router.get("/getallusernames", async (req, res) => {
