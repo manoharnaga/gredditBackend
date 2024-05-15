@@ -7,10 +7,10 @@ const db = require("../models/User");
 
 router.put("/followers", verifyToken, async (req, res) => {
   const { username } = req.user;
-  let newToken = null;
-  if(req.isNewToken){
-    newToken = req.headers.authorization?.split(' ')[1];
-  }
+  // let newToken = null;
+  // if(req.isNewToken){
+  //   newToken = req.headers.authorization?.split(' ')[1];
+  // }
   const { followerUsername, flagFollow } = req.body;
   
   const user = await db.findOne({ username: username });
@@ -46,7 +46,7 @@ router.put("/followers", verifyToken, async (req, res) => {
       .catch((error) => console.error("Error:", error));
     await followUser
       .save()
-      .then((data) => res.status(200).json({ status: "both recieved", firstResponse, data, newToken }))
+      .then((data) => res.status(200).json({ status: "both recieved", firstResponse, data }))
       .catch((error) => console.error("Error:", error));
   } catch (error) {
     res.status(500).json({ status: "Error updating followers list!" });
@@ -98,10 +98,10 @@ router.put("/editprofile", async (req, res) => {
 
 router.put("/uploadimage", verifyToken, async (req, res) => {
   const { username } = req.user;
-  let newToken = null;
-  if(req.isNewToken){
-    newToken = req.headers.authorization?.split(' ')[1];
-  }
+  // let newToken = null;
+  // if(req.isNewToken){
+  //   newToken = req.headers.authorization?.split(' ')[1];
+  // }
   const { imgUrl } = req.body;
   const user = await db.findOne({ username: username });
   if (!user || !imgUrl) {
@@ -110,7 +110,7 @@ router.put("/uploadimage", verifyToken, async (req, res) => {
   try {
     user.profilepic = imgUrl;
     await user.save()
-    .then((data) => res.status(200).json({ status: "Updated Profilepic successfully!", user: data,newToken }))
+    .then((data) => res.status(200).json({ status: "Updated Profilepic successfully!", user: data}))
     .catch((error) => console.error("Error:", error));
   } catch (e) {
     return res.status(500).json({ status: "Error uploading ProfilePic: ", e });
